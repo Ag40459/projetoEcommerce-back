@@ -1,12 +1,11 @@
 const express = require("express");
 const routes = express();
 
-const verifyEmail = require('./controllers/user/verifyEmail')
-const registerUser = require('./controllers/user/registerUser');
-const loginUser = require('./controllers/user/login')
+const { registerUser, getAllUser, updateUser, deleteUser, getUsersBySearch } = require('./controllers/user/Users');
 
-routes.get("/users/verifyEmail/:email", verifyEmail);
+routes.get('/users/accounts', getAllUser);
 routes.post('/users/signup', registerUser)
-routes.post("/users/login", loginUser);
-
+routes.put('/users/updateUser/:id', updateUser);
+routes.delete('/users/delete/:id', deleteUser);
+routes.get('/users/search', getUsersBySearch);
 module.exports = routes

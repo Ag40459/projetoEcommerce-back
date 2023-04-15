@@ -11,75 +11,34 @@ const getAllUser = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 }
+
 const registerUser = async (req, res) => {
   try {
-    const {
-      name,
-      birthdate,
-      phone,
-      email,
-      category,
-      password,
-      credits,
-      image_url,
-      confirm_password,
-      address,
-      plan,
-      title,
-      description
-    } = req.body;
+    const { email, password, confirm_password } = req.body;
 
-    const userExists = await knex("users")
-      .select("*")
-      .where({ email: email })
-      .first();
-
-    if (userExists) {
-      return res.status(400).json({ error: "E-mail já cadastrado." });
+    if (!email || !password || !confirm_password) {
+      return res.status(400).json({ error: "Campos obrigatórios não preenchidos." });
     }
 
-    if (
-      !name ||
-      !birthdate ||
-      !phone ||
-      !email ||
-      !category ||
-      !password ||
-      !confirm_password ||
-      !plan ||
-      !title ||
-      !description
-    ) {
-      return res
-        .status(400)
-        .json({ error: "Campos obrigatórios não preenchidos." });
+    if (password.length < 6 || !/[a-z]/.test(password) || !/[A-Z]/.test(password)) {
+      return res.status(400).json({ error: "Senha deve conter pelo menos 6 caracteres, incluindo uma maiúscula e uma minúscula." });
     }
 
     if (password !== confirm_password) {
-      return res
-        .status(400)
-        .json({ error: "Senha e confirmação de senha não conferem." });
+      return res.status(400).json({ error: "Senha e confirmação de senha não conferem." });
     }
 
     const encryptedPassword = await bcrypt.hash(password, 10);
 
     const newUser = {
-      name,
-      birthdate,
-      phone,
       email,
-      category,
       password: encryptedPassword,
-      address,
-      credits,
-      plan,
-      title,
-      description,
-      image_url,
+      confirm_password,
       created_at: new Date().toISOString()
     };
 
     await knex.transaction(async (trx) => {
+
       const insertedUsersIds = await trx("users").insert(newUser).returning("id");
       const accountId = insertedUsersIds[0];
 
@@ -110,20 +69,32 @@ const registerUser = async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 };
+
 const updateUser = async (req, res) => {
   try {
-    const id = parseInt(req.params.id)
-    console.log(id);
+    const id = parseInt(req.params.id);
 
-    const { name, birthdate, phone, email, category, password, confirm_password, address, plan } = req.body;
+    const { name, birthdate, phone, email, category, password, confirm_password, address, plan, title, description } = req.body;
 
     const user = await knex('users').select('*').where({ id }).first();
     if (!user) {
       return res.status(404).json({ error: 'Usuário não encontrado.' });
     }
 
-    if (!name && !birthdate && !phone && !email && !category && !password && !confirm_password && !address && !plan) {
+    if (!name && !birthdate && !phone && !email && !category && !password && !confirm_password && !address && !plan && !title && !description) {
       return res.status(400).json({ error: 'Nenhum campo enviado para atualização.' });
+    }
+
+    if (phone && !phone.match(/^\+\d{2}\s\d{2}\s\d{8,9}$/)) {
+      return res.status(400).json({ error: 'O telefone deve estar no formato +DD NN NNNNNNNNN ou +DD NN NNNNNNNNNN.' });
+    }
+
+    if (title && title.length < 5) {
+      return res.status(400).json({ error: 'O título deve ter pelo menos 5 caracteres.' });
+    }
+
+    if (description && description.length < 25) {
+      return res.status(400).json({ error: 'A descrição deve ter pelo menos 25 caracteres.' });
     }
 
     const updatedUser = {
@@ -136,6 +107,8 @@ const updateUser = async (req, res) => {
       confirm_password: confirm_password || user.confirm_password,
       address: address || user.address,
       plan: plan || user.plan,
+      title: title || '',
+      description: description || '',
       updated_at: new Date().toISOString()
     };
 
@@ -146,37 +119,56 @@ const updateUser = async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 };
-const deleteUser = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const user = await knex('users').where({ id }).first();
 
-    if (!user) {
-      return res.status(404).json({ error: 'Usuário não encontrado.' });
+const deleteUser = async (req, res) => {
+
+  const { id } = req.params;
+
+  const userExists = await knex('users').select('*').where('id', id).first();
+
+  if (!userExists) {
+    return res.status(404).json({ error: 'Usuário não encontrado.' });
+  }
+
+  try {
+    const { balance, deposit_pending, bonus_pending } = await knex('accounts')
+      .select(knex.raw('SUM(balance) as balance, SUM(deposit_pending) as deposit_pending, SUM(bonus_pending) as bonus_pending'))
+      .where('user_id', id)
+      .first();
+
+    if (Number(balance) !== 0 || Number(deposit_pending) > 0 || Number(bonus_pending) > 0) {
+      return res.status(400).json({ error: 'Não é possível excluir sua conta.' });
     }
 
-    await knex('users').where({ id }).del();
+    await knex.transaction(async trx => {
+      // await trx('transfer_history').where('from_account_id', knex('accounts').select('id').where('user_id', id)).del();
+      // await trx('transfer_history').where('to_account_id', knex('accounts').select('id').where('user_id', id)).del();
+      // await trx('withdrawal_history').whereIn('account_id', knex('accounts').select('id').where('user_id', id)).del();
+      // await trx('deposit_history').whereIn('account_id', knex('accounts').select('id').where('user_id', id)).del();
+      await trx('accounts').where('user_id', id).del();
+      await trx('users').where('id', id).del();
+    });
 
     return res.status(200).json({ success: 'Usuário excluído com sucesso.' });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
-};
+}
+
 const getUsersBySearch = async ({ query }, res) => {
-  const { email, phone, plan } = query;
+  const { search } = query;
 
   try {
     const users = await knex('users')
       .select('*')
       .modify((queryBuilder) => {
-        if (email) {
-          queryBuilder.where('email', 'ilike', `%${email}%`);
-        }
-        if (phone) {
-          queryBuilder.where('phone', 'ilike', `%${phone}%`);
-        }
-        if (plan) {
-          queryBuilder.where('plan', 'ilike', `%${plan}%`);
+        if (search) {
+          queryBuilder.where((qb) => {
+            qb.where('email', 'ilike', `%${search}%`)
+              .orWhere('phone', 'ilike', `%${search}%`)
+              .orWhere('plan', 'ilike', `%${search}%`)
+              .orWhere(knex.raw(`concat(title, ' ', description)`), 'ilike', `%${search}%`);
+          });
         }
       });
 

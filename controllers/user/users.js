@@ -1,7 +1,5 @@
 const knex = require("../../database/conection");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const secret = require("../../config");
 
 
 const getAllUser = async (req, res) => {
@@ -15,19 +13,52 @@ const getAllUser = async (req, res) => {
 }
 const registerUser = async (req, res) => {
   try {
-    const { name, birthdate, phone, email, category, password, credits, image_url, confirm_password, address, plan } = req.body;
+    const {
+      name,
+      birthdate,
+      phone,
+      email,
+      category,
+      password,
+      credits,
+      image_url,
+      confirm_password,
+      address,
+      plan,
+      title,
+      description
+    } = req.body;
 
-    const userExists = await knex("users").select("*").where({ email: email }).first();
+    const userExists = await knex("users")
+      .select("*")
+      .where({ email: email })
+      .first();
+
     if (userExists) {
       return res.status(400).json({ error: "E-mail já cadastrado." });
     }
 
-    if (!name || !birthdate || !phone || !email || !category || !password || !confirm_password || !plan) {
-      return res.status(400).json({ error: "Campos obrigatórios não preenchidos." });
+    if (
+      !name ||
+      !birthdate ||
+      !phone ||
+      !email ||
+      !category ||
+      !password ||
+      !confirm_password ||
+      !plan ||
+      !title ||
+      !description
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Campos obrigatórios não preenchidos." });
     }
 
     if (password !== confirm_password) {
-      return res.status(400).json({ error: "Senha e confirmação de senha não conferem." });
+      return res
+        .status(400)
+        .json({ error: "Senha e confirmação de senha não conferem." });
     }
 
     const encryptedPassword = await bcrypt.hash(password, 10);
@@ -39,18 +70,42 @@ const registerUser = async (req, res) => {
       email,
       category,
       password: encryptedPassword,
-      confirm_password,
-      address: address,
-      credits: credits,
+      address,
+      credits,
       plan,
-      image_url: image_url,
+      title,
+      description,
+      image_url,
       created_at: new Date().toISOString()
     };
 
+    await knex.transaction(async (trx) => {
+      const insertedUsersIds = await trx("users").insert(newUser).returning("id");
+      const accountId = insertedUsersIds[0];
 
-    await knex("users").insert(newUser);
+      const newAccount = {
+        user_id: accountId.id,
+        balance: 0,
+        created_at: new Date().toISOString(),
+      };
 
-    return res.status(200).json({ success: "Novo usuário cadastrado com sucesso." });
+      await trx("accounts").insert(newAccount);
+
+      const createdUser = await trx("users")
+        .select("*")
+        .where({ id: accountId.id })
+        .first();
+
+      delete createdUser.password;
+      delete createdUser.confirm_password;
+
+      const createdAccount = await trx("accounts")
+        .select("*")
+        .where({ user_id: accountId.id })
+        .first();
+
+      return res.status(200).json({ success: "Novo usuário cadastrado com sucesso.", user: createdUser, account: createdAccount });
+    });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -130,45 +185,11 @@ const getUsersBySearch = async ({ query }, res) => {
     return res.status(400).json({ error: error.message });
   }
 };
-const login = async (req, res) => {
-  const { email, password } = req.body.login;
-
-  try {
-    const userExist = await knex("users").where({ email }).first();
-
-    if (!userExist) {
-      return res
-        .status(404)
-        .json({ user: { login: "E-mail e/ou senha inválidos" } });
-    }
-
-    const checkPassword = await bcrypt.compare(password, userExist.password);
-
-    if (!checkPassword) {
-      return res
-        .status(400)
-        .json({ user: { login: "E-mail e/ou senha inválidos" } });
-    }
-
-    const { password: _, ...userData } = userExist;
-
-    const token = jwt.sign(userData, secret, { expiresIn: "1d" });
-
-    return res.status(200).json({
-      message: "Login efetuado com sucesso",
-      token: token,
-      dados_do_usuario: userData,
-    });
-  } catch (error) {
-    return res.status(400).json(error.message);
-  }
-};
 
 module.exports = {
   getAllUser,
   registerUser,
   updateUser,
   deleteUser,
-  getUsersBySearch,
-  login
+  getUsersBySearch
 };

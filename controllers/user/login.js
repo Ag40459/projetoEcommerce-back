@@ -1,11 +1,11 @@
-const knex = require("../../database/connection");
+const knex = require("../../database/conection");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const secret = require("../../config");
 
 const login = async (req, res) => {
   const { email, password } = req.body.login;
-  
+
 
   try {
     const userExist = await knex("users").where({ email }).first();

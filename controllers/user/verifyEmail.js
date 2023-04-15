@@ -1,4 +1,4 @@
-const knex = require("../../database/connection");
+const knex = require("../../database/conection");
 
 const verifyEmail = async (req, res) => {
   const { email } = req.params;

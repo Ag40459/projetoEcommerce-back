@@ -1,34 +1,32 @@
-const jwt = require("jsonwebtoken");
-const knex = require("../../database/conection");
 const secret = require("../../config");
 
 const checkToken = async (req, res, next) => {
     const { authorization } = req.headers;
-    console.log(req.headers);
-    const token = authorization.split(" ")[1];
-    if (!token || token === "Bearer" || token === "undefined") {
-        return res.status(400).json({ message: "Token não informado." });
+
+    if (!authorization || typeof authorization !== "string" || !authorization.startsWith("Bearer ")) {
+        return res.status(401).json({ message: "Token inválido ou não fornecido." });
     }
+    const token = authorization.split(" ")[1];
 
     try {
-        const { id } = jwt.verify(token, secret);
+
+        const { id } = await jwt.verify(token, secret);
 
         if (!id) {
-            return res.status(400).json({ mensagem: "Token inválido." });
+            return res.status(401).json({ message: "Token inválido." });
         }
 
-        const userExist = await knex("users").where({ id }).first();
+        const user = await knex("users").where({ id }).first();
 
-        if (!userExist) {
-            return res.status(404).json({ message: ["Usuário não encontrado"] });
+        if (!user) {
+            return res.status(404).json({ message: "Usuário não encontrado." });
         }
 
-        const { id: userId } = userExist;
-        req.user = { id: userId };
+        req.user = { id: user.id };
 
         next();
     } catch (error) {
-        return res.status(400).json(error.message);
+        return res.status(401).json({ message: "Falha na autenticação. Token inválido." });
     }
 };
 

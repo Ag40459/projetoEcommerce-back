@@ -2,6 +2,8 @@ create database ListtaVip;
 
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
+  ALTER TABLE users
+  ADD COLUMN category_id INTEGER REFERENCES categories(id);
   name VARCHAR(255) DEFAULT NULL,
   birthdate DATE DEFAULT NULL,
   phone VARCHAR(20) DEFAULT '',
@@ -33,3 +35,13 @@ CREATE TABLE IF NOT EXISTS accounts (
   deleted_at TIMESTAMP,
   deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+
+CREATE TABLE categories (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description VARCHAR(255),
+  image_url VARCHAR(255)
+);
+
+

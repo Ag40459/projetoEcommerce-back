@@ -1,6 +1,5 @@
-const knex = require("../../database/conection");
+const knex = require("../database/conection");
 const bcrypt = require("bcrypt");
-
 
 const getAllUser = async (req, res) => {
   try {
@@ -27,13 +26,17 @@ const registerUser = async (req, res) => {
     if (password !== confirm_password) {
       return res.status(400).json({ error: "Senha e confirmação de senha não conferem." });
     }
+    const user = await knex("users").where({ email }).first();
+    if (user) {
+      return res.status(400).json({ error: "E-mail já cadastrado." });
+    }
 
     const encryptedPassword = await bcrypt.hash(password, 10);
 
     const newUser = {
       email,
       password: encryptedPassword,
-      confirm_password,
+      confirm_password: encryptedPassword,
       created_at: new Date().toISOString()
     };
 

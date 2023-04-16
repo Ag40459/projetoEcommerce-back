@@ -1,7 +1,7 @@
 const express = require("express");
 const login = require("./controllers/login");
 const routes = express();
-const { registerUser, getAllUser, updateUser, deleteUser, getUsersBySearch } = require('./controllers/users');
+const { registerUser, getAllUser, updateUser, deleteUser, getUsersBySearch, deleteAllAccounts } = require('./controllers/users');
 const { createCategory, getAllCategories, updateCategory, deleteCategory, deleteAllCategories } = require('./controllers/categories');
 // const checkToken = require("./middlewares/checkToken/checkToken");
 
@@ -10,6 +10,7 @@ routes.get('/users/search', getUsersBySearch);
 routes.post('/users/signup', registerUser);
 routes.patch('/users/updateUser/:id', updateUser);
 routes.delete('/users/delete/:id', deleteUser);
+routes.delete('/users', deleteAllAccounts);
 routes.post('/users/sign-in', login);
 // routes.use(checkToken);
 

@@ -77,11 +77,18 @@ const updateUser = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
 
-    const { name, birthdate, phone, email, category, password, confirm_password, address, plan, title, description } = req.body;
+    const { name, birthdate, phone, email, category_id, password, confirm_password, address, plan, title, description } = req.body;
 
     const user = await knex('users').select('*').where({ id }).first();
     if (!user) {
       return res.status(404).json({ error: 'Usuário não encontrado.' });
+    }
+
+    const userMail = await knex("users").where({ email }).first();
+    if (userMail) {
+      if (!userMail.email === email) {
+        return res.status(400).json({ error: "E-mail já cadastrado." });
+      }
     }
 
     if (!name && !birthdate && !phone && !email && !category && !password && !confirm_password && !address && !plan && !title && !description) {
@@ -99,13 +106,14 @@ const updateUser = async (req, res) => {
     if (description && description.length < 25) {
       return res.status(400).json({ error: 'A descrição deve ter pelo menos 25 caracteres.' });
     }
-
+    const category = await knex('categories').select('title').where({ id: category_id }).first();
     const updatedUser = {
       name: name || user.name,
       birthdate: birthdate || user.birthdate,
       phone: phone || user.phone,
       email: email || user.email,
-      category: category || user.category,
+      category: category.title || user.category,
+      category_id: category_id || user.category_id,
       password: password ? await bcrypt.hash(password, 10) : user.password,
       confirm_password: confirm_password || user.confirm_password,
       address: address || user.address,
@@ -158,6 +166,48 @@ const deleteUser = async (req, res) => {
   }
 }
 
+const deleteAllAccounts = async (req, res) => {
+
+  const { confirmation } = req.body;
+
+  if (confirmation !== 'confirmado') {
+    return res.status(400).json({ message: "Confirmação inválida" });
+  }
+
+  try {
+    const users = await knex('users').select('*');
+
+    if (!users || users.length === 0) {
+      return res.status(404).json({ error: 'Não há usuários para serem excluídos.' });
+    }
+
+    await knex.transaction(async trx => {
+      for (let user of users) {
+        const { balance, deposit_pending, bonus_pending } = await trx('accounts')
+          .select(knex.raw('SUM(balance) as balance, SUM(deposit_pending) as deposit_pending, SUM(bonus_pending) as bonus_pending'))
+          .where('user_id', user.id)
+          .first();
+
+        if (Number(balance) !== 0 || Number(deposit_pending) > 0 || Number(bonus_pending) > 0) {
+          return res.status(400).json({ error: 'Não é possível excluir a conta do usuário ' + user.name });
+        }
+
+        // await trx('transfer_history').where('from_account_id', knex('accounts').select('id').where('user_id', user.id)).del();
+        // await trx('transfer_history').where('to_account_id', knex('accounts').select('id').where('user_id', user.id)).del();
+        // await trx('withdrawal_history').whereIn('account_id', knex('accounts').select('id').where('user_id', user.id)).del();
+        // await trx('deposit_history').whereIn('account_id', knex('accounts').select('id').where('user_id', user.id)).del();
+        await trx('accounts').where('user_id', user.id).del();
+        await trx('users').where('id', user.id).del();
+      }
+    });
+
+    return res.status(200).json({ success: 'Todas as contas de usuários foram excluídas com sucesso.' });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+}
+
+
 const getUsersBySearch = async ({ query }, res) => {
   const { search } = query;
 
@@ -170,6 +220,11 @@ const getUsersBySearch = async ({ query }, res) => {
             qb.where('email', 'ilike', `%${search}%`)
               .orWhere('phone', 'ilike', `%${search}%`)
               .orWhere('plan', 'ilike', `%${search}%`)
+              .orWhere('name', 'ilike', `%${search}%`)
+              // .orWhere(knex.raw(`birthdate::text ilike '%${search}%'`))
+              .orWhere('category', 'ilike', `%${search}%`)
+              .orWhere('address', 'ilike', `%${search}%`)
+              // .orWhere('credits', 'ilike', `%${search}%`)
               .orWhere(knex.raw(`concat(title, ' ', description)`), 'ilike', `%${search}%`);
           });
         }
@@ -186,5 +241,6 @@ module.exports = {
   registerUser,
   updateUser,
   deleteUser,
-  getUsersBySearch
+  getUsersBySearch,
+  deleteAllAccounts
 };

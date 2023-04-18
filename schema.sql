@@ -1,22 +1,26 @@
-create database ListtaVip;
-
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
-  ALTER TABLE users
-  ADD COLUMN category_id INTEGER REFERENCES categories(id);
-  name VARCHAR(255) DEFAULT NULL,
-  birthdate DATE DEFAULT NULL,
-  phone VARCHAR(20) DEFAULT '',
+  name VARCHAR(255),
+  birthdate DATE,
+  phone VARCHAR(20),
   email VARCHAR(255) UNIQUE NOT NULL,
-  category VARCHAR(50) DEFAULT '',
+  category VARCHAR(50),
   password VARCHAR(255) NOT NULL,
   confirm_password VARCHAR(255) NOT NULL,
-  address TEXT DEFAULT '',
+  address TEXT,
   credits INTEGER NOT NULL DEFAULT 0,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  plan VARCHAR(255) DEFAULT '',
-  image_url VARCHAR(255) DEFAULT '',
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+  plan VARCHAR(255),
+  image_url VARCHAR(255),
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  category_id INTEGER REFERENCES categories(id)
+);
+
+CREATE TABLE IF NOT EXISTS categories (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description VARCHAR(255),
+  image_url VARCHAR(255)
 );
 
 
@@ -33,15 +37,6 @@ CREATE TABLE IF NOT EXISTS accounts (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP,
-  deleted BOOLEAN NOT NULL DEFAULT FALSE
+  deleted BOOLEAN NOT NULL DEFAULT FALSE,
+  transfer_history JSONB
 );
-
-
-CREATE TABLE categories (
-  id SERIAL PRIMARY KEY,
-  title VARCHAR(255) NOT NULL,
-  description VARCHAR(255),
-  image_url VARCHAR(255)
-);
-
-

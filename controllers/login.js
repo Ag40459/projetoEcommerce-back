@@ -23,10 +23,11 @@ const login = async (req, res) => {
 
     const { password: userPassword, confirm_password: _, ...userData } = userExist;
     const token = jwt.sign(userData, secret, { expiresIn: "1d" });
+
     return res.status(200).json({
       message: "Login efetuado com sucesso",
       token: token,
-      dados_do_usuario: userData,
+      userID: userData.id,
     });
   } catch (error) {
     return res.status(400).json(error.message);

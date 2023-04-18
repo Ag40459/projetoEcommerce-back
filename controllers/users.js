@@ -3,13 +3,63 @@ const bcrypt = require("bcrypt");
 
 const getAllUser = async (req, res) => {
   try {
-    const accounts = await knex('users').select('*');
-    res.status(200).json(accounts);
+    const users = await knex('users').select('*');
+    res.status(200).json({ message: 'Conta encontradas com sucesso', users });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'Erro ao buscar contas', error: error.message });
   }
-}
+};
+
+const getUsersBySearch = async ({ query }, res) => {
+  const { search } = query;
+
+  try {
+    const users = await knex('users')
+      .select('*')
+      .modify((queryBuilder) => {
+        if (search) {
+          queryBuilder.where((qb) => {
+            qb.where('email', 'ilike', `%${search}%`)
+              .orWhere('phone', 'ilike', `%${search}%`)
+              .orWhere('plan', 'ilike', `%${search}%`)
+              .orWhere('name', 'ilike', `%${search}%`)
+              // .orWhere(knex.raw(`birthdate::text ilike '%${search}%'`))
+              .orWhere('category', 'ilike', `%${search}%`)
+              .orWhere('address', 'ilike', `%${search}%`)
+              // .orWhere('credits', 'ilike', `%${search}%`)
+              .orWhere(knex.raw(`concat(title, ' ', description)`), 'ilike', `%${search}%`);
+          });
+        }
+      });
+
+    return res.status(200).json({ data: { users } });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+const getUsersUnifiedTabled = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const userOrigi = await knex.select().from('users').where('id', id).first();
+    if (!userOrigi) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+    const { password: userPassword, confirm_password: _, ...user } = userOrigi;
+
+    const account = await knex.select().from('accounts').where('user_id', id).first();
+    if (!account) {
+      return res.status(404).json({ message: 'Conta não encontrada para o usuário informado' });
+    }
+
+    res.json({ user, account });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erro interno do servidor' });
+  }
+};
 
 const registerUser = async (req, res) => {
   try {
@@ -95,7 +145,9 @@ const updateUser = async (req, res) => {
       return res.status(400).json({ error: 'Nenhum campo enviado para atualização.' });
     }
 
-    if (phone && !phone.match(/^\+\d{2}\s\d{2}\s\d{8,9}$/)) {
+    if (phone === " " || phone === "") {
+    }
+    else if (phone && !phone.match(/^\+\d{2}\s\d{2}\s\d{8,9}$/)) {
       return res.status(400).json({ error: 'O telefone deve estar no formato +DD NN NNNNNNNNN ou +DD NN NNNNNNNNNN.' });
     }
 
@@ -110,7 +162,7 @@ const updateUser = async (req, res) => {
     const updatedUser = {
       name: name || user.name,
       birthdate: birthdate || user.birthdate,
-      phone: phone || user.phone,
+      phone: phone !== undefined ? phone : user.phone !== '' ? user.phone : '',
       email: email || user.email,
       category: category.title || user.category,
       category_id: category_id || user.category_id,
@@ -118,7 +170,7 @@ const updateUser = async (req, res) => {
       confirm_password: confirm_password || user.confirm_password,
       address: address || user.address,
       plan: plan || user.plan,
-      title: title || '',
+      title: title,
       description: description || '',
       updated_at: new Date().toISOString()
     };
@@ -164,7 +216,7 @@ const deleteUser = async (req, res) => {
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
-}
+};
 
 const deleteAllAccounts = async (req, res) => {
 
@@ -205,35 +257,6 @@ const deleteAllAccounts = async (req, res) => {
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
-}
-
-
-const getUsersBySearch = async ({ query }, res) => {
-  const { search } = query;
-
-  try {
-    const users = await knex('users')
-      .select('*')
-      .modify((queryBuilder) => {
-        if (search) {
-          queryBuilder.where((qb) => {
-            qb.where('email', 'ilike', `%${search}%`)
-              .orWhere('phone', 'ilike', `%${search}%`)
-              .orWhere('plan', 'ilike', `%${search}%`)
-              .orWhere('name', 'ilike', `%${search}%`)
-              // .orWhere(knex.raw(`birthdate::text ilike '%${search}%'`))
-              .orWhere('category', 'ilike', `%${search}%`)
-              .orWhere('address', 'ilike', `%${search}%`)
-              // .orWhere('credits', 'ilike', `%${search}%`)
-              .orWhere(knex.raw(`concat(title, ' ', description)`), 'ilike', `%${search}%`);
-          });
-        }
-      });
-
-    return res.status(200).json({ data: { users } });
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
 };
 
 module.exports = {
@@ -242,5 +265,6 @@ module.exports = {
   updateUser,
   deleteUser,
   getUsersBySearch,
-  deleteAllAccounts
+  deleteAllAccounts,
+  getUsersUnifiedTabled
 };

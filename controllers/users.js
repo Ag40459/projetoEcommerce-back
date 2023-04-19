@@ -11,6 +11,18 @@ const getAllUser = async (req, res) => {
   }
 };
 
+const getAllUserIdCategory = async (req, res) => {
+  const { category_id } = req.params;
+  try {
+    const users = await knex('users').select('*').where({ category_id });
+    res.status(200).json({ message: 'Usuários encontrados com sucesso', users });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erro ao buscar usuários', error: error.message });
+  }
+};
+
+
 const getUsersBySearch = async ({ query }, res) => {
   const { search } = query;
 
@@ -266,5 +278,6 @@ module.exports = {
   deleteUser,
   getUsersBySearch,
   deleteAllAccounts,
-  getUsersUnifiedTabled
+  getUsersUnifiedTabled,
+  getAllUserIdCategory
 };

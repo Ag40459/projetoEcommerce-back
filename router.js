@@ -1,7 +1,7 @@
 const express = require("express");
 const login = require("./controllers/login");
 const router = express();
-const { registerUser, getAllUser, updateUser, deleteUser, getUsersBySearch, deleteAllAccounts, getUsersUnifiedTabled } = require('./controllers/users');
+const { registerUser, getAllUser, updateUser, deleteUser, getUsersBySearch, deleteAllAccounts, getUsersUnifiedTabled, getAllUserIdCategory } = require('./controllers/users');
 const { createCategory, getAllCategories, updateCategory, deleteCategory, deleteAllCategories } = require('./controllers/categories');
 const { updateAccount, getAccount, getAccountId } = require("./controllers/accounts");
 

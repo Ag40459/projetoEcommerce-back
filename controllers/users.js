@@ -15,7 +15,10 @@ const getAllUserIdCategory = async (req, res) => {
   const { id } = req.params;
   try {
     const users = await knex('users').select('*').where({ id });
-    res.status(200).json({ message: 'Usuários encontrados com sucesso', users });
+
+    const filteredUsers = users.map(({ password, confirm_password, ...rest }) => rest);
+
+    res.status(200).json({ message: 'Usuários encontrados com sucesso', users: filteredUsers });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Erro ao buscar usuários', error: error.message });

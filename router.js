@@ -18,7 +18,7 @@ router.post('/users/sign-in', login);
 // router.use(checkToken);
 
 router.get('/categories', getAllCategories);
-router.get('/users/categories/:category_id', getAllUserIdCategory);
+router.get('/users/category/:id', getAllUserIdCategory);
 router.post('/categories', createCategory);
 router.patch('/categories/:id', updateCategory);
 router.delete('/categories/:id', deleteCategory);

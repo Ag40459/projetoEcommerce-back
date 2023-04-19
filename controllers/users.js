@@ -12,9 +12,9 @@ const getAllUser = async (req, res) => {
 };
 
 const getAllUserIdCategory = async (req, res) => {
-  const { category_id } = req.params;
+  const { id } = req.params;
   try {
-    const users = await knex('users').select('*').where({ category_id });
+    const users = await knex('users').select('*').where({ id });
     res.status(200).json({ message: 'Usuários encontrados com sucesso', users });
   } catch (error) {
     console.error(error);

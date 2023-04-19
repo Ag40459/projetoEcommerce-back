@@ -14,7 +14,7 @@ const getAllUser = async (req, res) => {
 const getAllUserIdCategory = async (req, res) => {
   const { id } = req.params;
   try {
-    const users = await knex('users').select('*').where({ id });
+    const users = await knex('users').select('*').where({ category_id: id });
 
     const filteredUsers = users.map(({ password, confirm_password, ...rest }) => rest);
 

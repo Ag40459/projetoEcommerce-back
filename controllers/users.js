@@ -78,7 +78,7 @@ const getUsersUnifiedTabled = async (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { email, password, confirm_password } = req.body;
+    const { name, birthdate, phone, email, password, confirm_password, state, city, zip_code, category, credits, plan, image_url, title, description } = req.body;
 
     if (!email || !password || !confirm_password) {
       return res.status(400).json({ error: "Campos obrigatórios não preenchidos." });
@@ -91,6 +91,13 @@ const registerUser = async (req, res) => {
     if (password !== confirm_password) {
       return res.status(400).json({ error: "Senha e confirmação de senha não conferem." });
     }
+
+    if (phone === " " || phone === "") {
+    }
+    else if (phone && !phone.match(/^\+\d{2}\s\d{2}\s\d{8,9}$/)) {
+      return res.status(400).json({ error: 'O telefone deve estar no formato +DD NN NNNNNNNNN ou +DD NN NNNNNNNNNN.' });
+    }
+
     const user = await knex("users").where({ email }).first();
     if (user) {
       return res.status(400).json({ error: "E-mail já cadastrado." });
@@ -99,10 +106,23 @@ const registerUser = async (req, res) => {
     const encryptedPassword = await bcrypt.hash(password, 10);
 
     const newUser = {
+      name,
+      birthdate,
+      phone,
       email,
+      category,
       password: encryptedPassword,
       confirm_password: encryptedPassword,
-      created_at: new Date().toISOString()
+      state,
+      city,
+      zip_code,
+      credits,
+      updated_at: new Date().toISOString(),
+      plan,
+      image_url,
+      created_at: new Date().toISOString(),
+      title,
+      description
     };
 
     await knex.transaction(async (trx) => {

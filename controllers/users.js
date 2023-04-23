@@ -207,7 +207,7 @@ const updateUser = async (req, res) => {
       state: state || user.state,
       zip_code: zip_code || user.zip_code,
       plan: plan || user.plan,
-      title: title,
+      title: title || user.title,
       description: description || '',
       updated_at: new Date().toISOString()
     };

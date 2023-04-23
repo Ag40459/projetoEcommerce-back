@@ -142,7 +142,7 @@ const updateUser = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
 
-    const { name, birthdate, phone, email, category_id, password, confirm_password, address, plan, title, description } = req.body;
+    const { name, birthdate, phone, email, category_id, password, confirm_password, city, state, plan, zip_code, title, description } = req.body;
 
     const user = await knex('users').select('*').where({ id }).first();
     if (!user) {
@@ -156,7 +156,7 @@ const updateUser = async (req, res) => {
       }
     }
 
-    if (!name && !birthdate && !phone && !email && !category && !password && !confirm_password && !address && !plan && !title && !description) {
+    if (!name && !birthdate && !phone && !email && !category && !password && !confirm_password && !city && !state && !zip_code && !plan && !title && !description) {
       return res.status(400).json({ error: 'Nenhum campo enviado para atualização.' });
     }
 
@@ -183,7 +183,9 @@ const updateUser = async (req, res) => {
       category_id: category_id || user.category_id,
       password: password ? await bcrypt.hash(password, 10) : user.password,
       confirm_password: confirm_password || user.confirm_password,
-      address: address || user.address,
+      city: city || user.city,
+      state: state || user.state,
+      zip_code: zip_code || user.zip_code,
       plan: plan || user.plan,
       title: title,
       description: description || '',

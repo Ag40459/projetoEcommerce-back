@@ -78,7 +78,7 @@ const getUsersUnifiedTabled = async (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { name, birthdate, phone, email, password, confirm_password, state, city, zip_code, category, credits, plan, image_url, title, description } = req.body;
+    const { name, birthdate, phone, email, password, confirm_password, state, city, zip_code, category, category_id, credits, plan, image_url, title, description } = req.body;
 
     if (!email || !password || !confirm_password) {
       return res.status(400).json({ error: "Campos obrigatórios não preenchidos." });
@@ -111,6 +111,7 @@ const registerUser = async (req, res) => {
       phone,
       email,
       category,
+      category_id,
       password: encryptedPassword,
       confirm_password: encryptedPassword,
       state,

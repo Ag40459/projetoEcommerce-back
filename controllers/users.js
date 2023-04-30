@@ -169,14 +169,11 @@ const updateUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'Usuário não encontrado.' });
     }
-    if (!email) {
 
-    } else {
-      const userMail = await knex("users").where({ email }).first();
-      if (userMail) {
-        if (!userMail.email === email) {
-          return res.status(400).json({ error: "E-mail já cadastrado." });
-        }
+    const userMail = await knex("users").where({ email }).first();
+    if (userMail) {
+      if (!userMail.email === email) {
+        return res.status(400).json({ error: "E-mail já cadastrado." });
       }
     }
 

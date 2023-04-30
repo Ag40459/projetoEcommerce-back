@@ -203,7 +203,7 @@ const updateUser = async (req, res) => {
       birthdate: birthdate || user.birthdate,
       phone: phone !== undefined ? phone : user.phone !== '' ? user.phone : '',
       email: email || user.email,
-      category: category.title || user.category,
+      category: category ? category.title : user.category,
       category_id: category_id || user.category_id,
       password: password ? await bcrypt.hash(password, 10) : user.password,
       confirm_password: confirm_password || user.confirm_password,

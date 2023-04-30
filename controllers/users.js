@@ -198,7 +198,7 @@ const updateUser = async (req, res) => {
       return res.status(400).json({ error: 'A descrição deve ter pelo menos 25 caracteres.' });
     }
     let category = await knex('categories').select('title').where({ id: category_id }).first();
-    let updatedUser = {
+    const updatedUser = {
       name: name || user.name,
       birthdate: birthdate || user.birthdate,
       phone: phone !== undefined ? phone : user.phone !== '' ? user.phone : '',

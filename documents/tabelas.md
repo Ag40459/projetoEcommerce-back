@@ -28,7 +28,6 @@ confirm_password: campo de confirmação de senha.
 address: endereço completo do usuário.
 credits: quantidade de créditos disponíveis na conta do usuário.
 plan: plano de assinatura do usuário (se houver).
-image_url: URL da imagem do perfil do usuário.
 created_at: data de criação do registro do usuário na tabela.
 updated_at: data da última atualização do registro do usuário na tabela.
 

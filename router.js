@@ -6,7 +6,7 @@ const { createCategory, getAllCategories, updateCategory, deleteCategory, delete
 const { updateAccount, getAccount, getAccountId } = require("./controllers/accounts");
 const { createImage, getImageById, updateImage, deleteImage, getAllImages } = require("./controllers/images");
 
-// const checkToken = require("./middlewares/checkToken/checkToken");
+const authMiddleware = require("./middlewares/checkToken/checkToken");
 
 router.get('/users/accounts', getAllUser);
 router.get('/users/search', getUsersBySearch);
@@ -16,7 +16,7 @@ router.delete('/users/delete/:id', deleteUser);
 router.delete('/users', deleteAllAccounts);
 router.get('/users/unified-tabled/:id', getUsersUnifiedTabled);
 router.post('/users/sign-in', login);
-// router.use(checkToken);
+router.use(authMiddleware);
 
 router.get('/categories', getAllCategories);
 router.get('/users/category/:id', getAllUserIdCategory);

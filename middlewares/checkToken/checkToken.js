@@ -1,4 +1,5 @@
-// const secret = require("../../config");
+const jwt = require("jsonwebtoken");
+const { secret } = require("../config/auth");
 
 // const checkToken = async (req, res, next) => {
 //     const { authorization } = req.headers;
@@ -36,13 +37,20 @@
 const authMiddleware = async (req, res, next) => {
     const token = req.headers.authorization;
 
+    if (!token) {
+        return res.status(401).json({ message: "Token não fornecido" });
+    }
+
     try {
         const decoded = jwt.verify(token, secret);
         req.user = { id: decoded.id }; // define req.user com o id do usuário
         next();
     } catch (error) {
-        return res.status(401).json({ message: "Não autorizado" });
+        return res.status(401).json({ message: "Token inválido" });
     }
 };
+
+module.exports = authMiddleware;
+
 
 module.exports = authMiddleware;

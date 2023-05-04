@@ -26,63 +26,29 @@ const updateAccount = async (req, res) => {
 
         if (balance) {
             updatedAccount.balance = balance;
-            await knex('accounts')
-                .where({ id })
-                .update({
-                    transfer_history: knex.raw(`JSONB_INSERT(transfer_history, '{movements}', '{"type": "deposit", "user": "${req.user.id}", "amount": ${balance}, "date": "${new Date().toISOString()}"}')`)
-                })
+            movements.push({ type: "deposit", user: req.user.id, amount: balance, date: new Date().toISOString() });
         }
 
         if (deposit_pending) {
             updatedAccount.deposit_pending = deposit_pending;
-            await knex('accounts')
-                .where({ id })
-                .update({
-                    transfer_history: knex.raw(`JSONB_INSERT(transfer_history, '{movements}', '{"type": "pending_deposit", "user": "${req.user.id}", "amount": ${deposit_pending}, "date": "${new Date().toISOString()}"}')`)
-                })
+            movements.push({ type: "pending_deposit", user: req.user.id, amount: deposit_pending, date: new Date().toISOString() });
         }
 
         if (deposit_confirmed) {
             updatedAccount.deposit_confirmed = deposit_confirmed;
-            await knex('accounts')
-                .where({ id })
-                .update({
-                    transfer_history: knex.raw(`JSONB_INSERT(transfer_history, '{movements}', '{"type": "confirmed_deposit", "user": "${req.user.id}", "amount": ${deposit_confirmed}, "date": "${new Date().toISOString()}"}')`)
-                })
+            movements.push({ type: "confirmed_deposit", user: req.user.id, amount: deposit_confirmed, date: new Date().toISOString() });
         }
 
         if (bonus) {
             updatedAccount.bonus = bonus;
-            await knex('accounts')
-                .where({ id })
-                .update({
-                    transfer_history: knex.raw(`JSONB_INSERT(transfer_history, '{movements}', '{"type": "bonus", "user": "${req.user.id}", "amount": ${bonus}, "date": "${new Date().toISOString()}"}')`)
-                })
+            movements.push({ type: "bonus", user: req.user.id, amount: bonus, date: new Date().toISOString() });
         }
 
         if (movements.length > 0) {
-            const accountData = await knex('accounts')
-                .select('transfer_history')
-                .where({ id })
-                .first();
-
-            const transferHistory = accountData.transfer_history || {};
-
-            if (typeof transferHistory === 'string') {
-                transferHistory = JSON.parse(transferHistory);
-            }
-
-            const updatedTransferHistory = {
-                movements: [
-                    ...(transferHistory.movements || []),
-                    ...movements,
-                ],
-            };
-
             await knex('accounts')
                 .where({ id })
                 .update({
-                    transfer_history: JSON.stringify(updatedTransferHistory),
+                    transfer_history: knex.raw(`jsonb_set(transfer_history, '{movements}', (COALESCE(transfer_history->'movements', '[]'::jsonb) || ?::jsonb))`, [JSON.stringify(movements)])
                 });
         }
 
@@ -125,7 +91,6 @@ const getAccountId = async (req, res) => {
             .json({ message: "Erro ao buscar conta", error: error.message });
     }
 };
-
 
 module.exports = {
     getAccount,

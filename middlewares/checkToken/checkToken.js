@@ -7,9 +7,10 @@ const authMiddleware = async (req, res, next) => {
         return res.status(401).json({ message: "Token inválido ou não fornecido." });
     }
     const token = authorization.split(" ")[1];
+    console.log(token);
 
     try {
-        const decoded = jwt.verify(token, secret);
+        const decoded = await jwt.verify(token, secret);
         req.user = { id: decoded.id }; // define req.user com o id do usuário
         next();
     } catch (error) {

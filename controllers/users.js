@@ -25,7 +25,6 @@ const getAllUserIdCategory = async (req, res) => {
   }
 };
 
-
 const getUsersBySearch = async ({ query }, res) => {
   const { search } = query;
 

@@ -26,22 +26,38 @@ const updateAccount = async (req, res) => {
 
         if (balance) {
             updatedAccount.balance = balance;
-            movements.push({ balance, date: new Date().toISOString() });
+            await knex('accounts')
+                .where({ id })
+                .update({
+                    transfer_history: knex.raw(`JSONB_INSERT(transfer_history, '{movements}', '{"type": "deposit", "user": "${req.user.id}", "amount": ${balance}, "date": "${new Date().toISOString()}"}')`)
+                })
         }
 
         if (deposit_pending) {
             updatedAccount.deposit_pending = deposit_pending;
-            movements.push({ deposit_pending, date: new Date().toISOString() });
+            await knex('accounts')
+                .where({ id })
+                .update({
+                    transfer_history: knex.raw(`JSONB_INSERT(transfer_history, '{movements}', '{"type": "pending_deposit", "user": "${req.user.id}", "amount": ${deposit_pending}, "date": "${new Date().toISOString()}"}')`)
+                })
         }
 
         if (deposit_confirmed) {
             updatedAccount.deposit_confirmed = deposit_confirmed;
-            movements.push({ deposit_confirmed, date: new Date().toISOString() });
+            await knex('accounts')
+                .where({ id })
+                .update({
+                    transfer_history: knex.raw(`JSONB_INSERT(transfer_history, '{movements}', '{"type": "confirmed_deposit", "user": "${req.user.id}", "amount": ${deposit_confirmed}, "date": "${new Date().toISOString()}"}')`)
+                })
         }
 
         if (bonus) {
             updatedAccount.bonus = bonus;
-            movements.push({ bonus, date: new Date().toISOString() });
+            await knex('accounts')
+                .where({ id })
+                .update({
+                    transfer_history: knex.raw(`JSONB_INSERT(transfer_history, '{movements}', '{"type": "bonus", "user": "${req.user.id}", "amount": ${bonus}, "date": "${new Date().toISOString()}"}')`)
+                })
         }
 
         if (movements.length > 0) {
@@ -77,7 +93,6 @@ const updateAccount = async (req, res) => {
         return res.status(500).json({ message: "Erro ao atualizar conta", error: error.message });
     }
 };
-
 
 const getAccountId = async (req, res) => {
     const { id } = req.params;

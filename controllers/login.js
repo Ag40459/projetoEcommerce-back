@@ -23,7 +23,7 @@ const login = async (req, res) => {
 
     const { password: userPassword, confirm_password: _, ...userData } = userExist;
     const token = jwt.sign(userData, secret, { expiresIn: "1d" });
-
+    req.user = { id: userData.id };
     return res.status(200).json({
       message: "Login efetuado com sucesso",
       token: token,

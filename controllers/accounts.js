@@ -26,29 +26,49 @@ const updateAccount = async (req, res) => {
 
         if (balance) {
             updatedAccount.balance = balance;
-            movements.push({ type: "deposit", user: req.user.id, amount: balance, date: new Date().toISOString() });
+            movements.push({
+                type: "deposit",
+                user: req.user.id,
+                amount: balance,
+                date: new Date().toISOString()
+            });
         }
 
         if (deposit_pending) {
             updatedAccount.deposit_pending = deposit_pending;
-            movements.push({ type: "pending_deposit", user: req.user.id, amount: deposit_pending, date: new Date().toISOString() });
+            movements.push({
+                type: "pending_deposit",
+                user: req.user.id,
+                amount: deposit_pending,
+                date: new Date().toISOString()
+            });
         }
 
         if (deposit_confirmed) {
             updatedAccount.deposit_confirmed = deposit_confirmed;
-            movements.push({ type: "confirmed_deposit", user: req.user.id, amount: deposit_confirmed, date: new Date().toISOString() });
+            movements.push({
+                type: "confirmed_deposit",
+                user: req.user.id,
+                amount: deposit_confirmed,
+                date: new Date().toISOString()
+            });
         }
 
         if (bonus) {
             updatedAccount.bonus = bonus;
-            movements.push({ type: "bonus", user: req.user.id, amount: bonus, date: new Date().toISOString() });
+            movements.push({
+                type: "bonus",
+                user: req.user.id,
+                amount: bonus,
+                date: new Date().toISOString()
+            });
         }
 
         if (movements.length > 0) {
             await knex('accounts')
                 .where({ id })
                 .update({
-                    transfer_history: knex.raw(`jsonb_set(transfer_history, '{movements}', (COALESCE(transfer_history->'movements', '[]'::jsonb) || ?::jsonb))`, [JSON.stringify(movements)])
+                    transfer_history: knex.raw(`JSONB_ARRAY_APPEND(COALESCE(transfer_history, '[]'::jsonb), '${JSON.stringify(movements)}'::jsonb)`)
                 });
         }
 
@@ -59,6 +79,7 @@ const updateAccount = async (req, res) => {
         return res.status(500).json({ message: "Erro ao atualizar conta", error: error.message });
     }
 };
+
 
 const getAccountId = async (req, res) => {
     const { id } = req.params;

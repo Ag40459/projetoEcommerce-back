@@ -47,20 +47,26 @@ const updateAccount = async (req, res) => {
         if (deposit_confirmed) {
             updatedAccount.deposit_confirmed = deposit_confirmed;
             const type = "deposit_confirmed";
-            movements.push({
-                type,
-                user: req.user.id,
-                amount: deposit_confirmed,
-                date: new Date().toISOString()
-            });
+
+            // Verifica se já existe uma movimentação do tipo "deposit_confirmed" no mesmo momento
+            const existingDepositConfirmed = accountExist.transfer_history?.movements?.find(movement =>
+                movement.type === type && movement.amount === deposit_confirmed && movement.date === new Date().toISOString()
+            );
+
+            if (!existingDepositConfirmed) {
+                movements.push({
+                    type,
+                    user: req.user.id,
+                    amount: deposit_confirmed,
+                    date: new Date().toISOString()
+                });
+            }
 
             await knex('accounts')
                 .where({ id })
                 .update({
                     transfer_history: knex.raw(`JSONB_SET(COALESCE(transfer_history, '{}'), '{movements}', (COALESCE(transfer_history -> 'movements', '[]'::jsonb) || '{"type": "${type}", "user": "${req.user.id}", "amount": ${deposit_confirmed}, "date": "${new Date().toISOString()}"}')::jsonb, true)`)
                 });
-
-
         }
 
         if (bonus) {
@@ -87,7 +93,6 @@ const updateAccount = async (req, res) => {
         return res.status(500).json({ message: "Erro ao atualizar conta", error: error.message });
     }
 };
-
 
 const getAccountId = async (req, res) => {
     const { id } = req.params;

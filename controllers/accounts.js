@@ -12,7 +12,7 @@ const getAccount = async (req, res) => {
 
 const updateAccount = async (req, res) => {
     const { id } = req.params;
-    const { balance, deposit_pending, deposit_confirmed, bonus } = req.body;
+    const { balance, deposit_pending, deposit_confirmed, bonus, last_deposit, last_withdrawal, last_bonus, bonus_pending } = req.body;
 
     try {
         const accountExist = await knex("accounts").where({ id, deleted: false }).first();
@@ -24,7 +24,7 @@ const updateAccount = async (req, res) => {
         const updatedAccount = {};
         const movements = [];
 
-        if (balance) {
+        if (balance !== undefined) {
             updatedAccount.balance = balance;
             movements.push({
                 type: "deposit",
@@ -34,7 +34,7 @@ const updateAccount = async (req, res) => {
             });
         }
 
-        if (deposit_pending) {
+        if (deposit_pending !== undefined) {
             updatedAccount.deposit_pending = deposit_pending;
             movements.push({
                 type: "pending_deposit",
@@ -44,7 +44,7 @@ const updateAccount = async (req, res) => {
             });
         }
 
-        if (deposit_confirmed) {
+        if (deposit_confirmed !== undefined) {
             updatedAccount.deposit_confirmed = deposit_confirmed;
             const type = "deposit_confirmed";
 
@@ -69,12 +69,34 @@ const updateAccount = async (req, res) => {
                 });
         }
 
-        if (bonus) {
+        if (bonus !== undefined) {
             updatedAccount.bonus = bonus;
             movements.push({
                 type: "bonus",
                 user: req.user.id,
                 amount: bonus,
+                date: new Date().toISOString()
+            });
+        }
+
+        if (last_deposit !== undefined) {
+            updatedAccount.last_deposit = last_deposit;
+        }
+
+        if (last_withdrawal !== undefined) {
+            updatedAccount.last_withdrawal = last_withdrawal;
+        }
+
+        if (last_bonus !== undefined) {
+            updatedAccount.last_bonus = last_bonus;
+        }
+
+        if (bonus_pending !== undefined) {
+            updatedAccount.bonus_pending = bonus_pending;
+            movements.push({
+                type: "bonus_pending",
+                user: req.user.id,
+                amount: bonus_pending,
                 date: new Date().toISOString()
             });
         }
@@ -88,11 +110,37 @@ const updateAccount = async (req, res) => {
                 });
         }
 
+        if (Object.keys(updatedAccount).length > 0) {
+            await knex('accounts')
+                .where({ id })
+                .update(updatedAccount);
+        }
+
+        if (movements.length > 0) {
+            const existingMovements = accountExist.transfer_history?.movements || [];
+            const newMovements = movements.filter(movement => {
+                const exists = existingMovements.some(em =>
+                    em.type === movement.type && em.amount === movement.amount && em.user === movement.user && em.date === movement.date
+                );
+                return !exists;
+            });
+
+            if (newMovements.length > 0) {
+                await knex('accounts')
+                    .where({ id })
+                    .update({
+                        transfer_history: knex.raw(`JSONB_SET(COALESCE(transfer_history, '{}'), '{movements}', COALESCE(transfer_history->'movements', '[]')::jsonb || '${JSON.stringify(newMovements)}'::jsonb, true)
+                        `)
+                    });
+            }
+        }
+
         return res.status(200).json({ message: "Conta atualizada com sucesso" });
     } catch (error) {
         return res.status(500).json({ message: "Erro ao atualizar conta", error: error.message });
     }
 };
+
 
 const getAccountId = async (req, res) => {
     const { id } = req.params;

@@ -76,7 +76,8 @@ const updateAccount = async (req, res) => {
             await knex('accounts')
                 .where({ id })
                 .update({
-                    transfer_history: knex.raw(`JSONB_ARRAY_APPEND(COALESCE(transfer_history, '[]'::jsonb), '${JSON.stringify(movements)}'::jsonb)`)
+                    transfer_history: knex.raw(`JSONB_SET(COALESCE(transfer_history, '{}'), '{movements}', COALESCE(transfer_history->'movements', '[]')::jsonb || '${JSON.stringify(movements)}'::jsonb, true)
+                    `)
                 });
         }
 

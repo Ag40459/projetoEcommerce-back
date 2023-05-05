@@ -52,11 +52,13 @@ const updateAccount = async (req, res) => {
                 amount: deposit_confirmed,
                 date: new Date().toISOString()
             });
+
             await knex('accounts')
                 .where({ id })
                 .update({
-                    transfer_history: knex.raw(`JSONB_INSERT(COALESCE(transfer_history, '{}'), '{"movements"}', (COALESCE(transfer_history -> 'movements', '[]'::jsonb) || '{"type": "confirmed_deposit", "user": "${req.user.id}", "amount": ${deposit_confirmed}, "date": "${new Date().toISOString()}"}')::jsonb)`)
+                    transfer_history: knex.raw(`JSONB_SET(COALESCE(transfer_history, '{}'), '{movements}', (COALESCE(transfer_history -> 'movements', '[]'::jsonb) || '{"type": "confirmed_deposit", "user": "${req.user.id}", "amount": ${deposit_confirmed}, "date": "${new Date().toISOString()}"}')::jsonb, true)`)
                 });
+
 
         }
 

@@ -52,6 +52,11 @@ const updateAccount = async (req, res) => {
                 amount: deposit_confirmed,
                 date: new Date().toISOString()
             });
+            await knex('accounts')
+                .where({ id })
+                .update({
+                    transfer_history: knex.raw(`JSONB_INSERT(COALESCE(transfer_history, '{}'), 'movements', (COALESCE(transfer_history -> 'movements', '[]'::jsonb) || '{"type": "confirmed_deposit", "user": "${req.user.id}", "amount": ${deposit_confirmed}, "date": "${new Date().toISOString()}"}')::jsonb)`)
+                });
         }
 
         if (bonus) {
@@ -72,19 +77,11 @@ const updateAccount = async (req, res) => {
                 });
         }
 
-        await knex('accounts')
-            .where({ id })
-            .update({
-                transfer_history: knex.raw(`JSONB_INSERT(COALESCE(transfer_history, '{}'), 'movements', (COALESCE(transfer_history -> 'movements', '[]'::jsonb) || '{"type": "confirmed_deposit", "user": "${req.user.id}", "amount": ${deposit_confirmed}, "date": "${new Date().toISOString()}"}')::jsonb)`)
-            });
-
-
         return res.status(200).json({ message: "Conta atualizada com sucesso" });
     } catch (error) {
         return res.status(500).json({ message: "Erro ao atualizar conta", error: error.message });
     }
 };
-
 
 const getAccountId = async (req, res) => {
     const { id } = req.params;

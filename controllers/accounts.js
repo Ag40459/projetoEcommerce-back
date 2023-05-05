@@ -50,7 +50,7 @@ const updateAccount = async (req, res) => {
 
             // Verifica se já existe uma movimentação do tipo "deposit_confirmed" no mesmo momento
             const existingDepositConfirmed = accountExist.transfer_history?.movements?.find(movement =>
-                movement.type === type && movement.amount === deposit_confirmed && movement.date === new Date().toISOString()
+                movement.type === type && movement.amount === deposit_confirmed && parseInt(movement.user) === req.user.id && movement.date === new Date().toISOString()
             );
 
             if (!existingDepositConfirmed) {

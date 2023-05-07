@@ -39,7 +39,8 @@ const getUsersBySearch = async ({ query }, res) => {
               .orWhere('plan', 'ilike', `%${search}%`)
               .orWhere('name', 'ilike', `%${search}%`)
               .orWhere('category', 'ilike', `%${search}%`)
-              .orWhere('address', 'ilike', `%${search}%`)
+              .orWhere('city', 'ilike', `%${search}%`)
+              .orWhere('state', 'ilike', `%${search}%`)
               .orWhere(knex.raw(`concat(title, ' ', description)`), 'ilike', `%${search}%`);
           });
         }

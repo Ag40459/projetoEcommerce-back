@@ -15,6 +15,7 @@ router.delete('/users/delete/:id', deleteUser);
 router.post('/users/sign-in', login);
 
 router.get('/categories', getAllCategories);
+router.get('/users/category/:id', getAllUserIdCategory);
 
 router.use(authMiddleware);
 
@@ -23,7 +24,6 @@ router.delete('/users', deleteAllAccounts);
 router.get('/users/unified-tabled/:id', getUsersUnifiedTabled);
 
 
-router.get('/users/category/:id', getAllUserIdCategory);
 router.post('/categories', createCategory);
 router.patch('/categories/:id', updateCategory);
 router.delete('/categories/:id', deleteCategory);

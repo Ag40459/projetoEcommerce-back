@@ -13,6 +13,7 @@ router.get('/users/search', getUsersBySearch);
 router.post('/users/sign-up', registerUser);
 router.delete('/users/delete/:id', deleteUser);
 router.post('/users/sign-in', login);
+router.get('/users/unified-tabled/:id', getUsersUnifiedTabled);
 
 router.get('/categories', getAllCategories);
 router.get('/users/category/:id', getAllUserIdCategory);
@@ -21,7 +22,6 @@ router.use(authMiddleware);
 
 router.patch('/users/updateUser/:id', updateUser);
 router.delete('/users', deleteAllAccounts);
-router.get('/users/unified-tabled/:id', getUsersUnifiedTabled);
 
 
 router.post('/categories', createCategory);

@@ -11,14 +11,18 @@ const authMiddleware = require("./middlewares/checkToken/checkToken");
 router.get('/users/accounts', getAllUser);
 router.get('/users/search', getUsersBySearch);
 router.post('/users/sign-up', registerUser);
-router.patch('/users/updateUser/:id', updateUser);
 router.delete('/users/delete/:id', deleteUser);
-router.delete('/users', deleteAllAccounts);
-router.get('/users/unified-tabled/:id', getUsersUnifiedTabled);
 router.post('/users/sign-in', login);
-router.use(authMiddleware);
 
 router.get('/categories', getAllCategories);
+
+router.use(authMiddleware);
+
+router.patch('/users/updateUser/:id', updateUser);
+router.delete('/users', deleteAllAccounts);
+router.get('/users/unified-tabled/:id', getUsersUnifiedTabled);
+
+
 router.get('/users/category/:id', getAllUserIdCategory);
 router.post('/categories', createCategory);
 router.patch('/categories/:id', updateCategory);
@@ -28,6 +32,8 @@ router.delete('/categories', deleteAllCategories);
 router.get('/accounts', getAccount);
 router.patch('/accounts/:id', updateAccount);
 router.get('/accounts/:id', getAccountId);
+
+
 
 router.post("/images", createImage);
 router.get("/images", getAllImages);

@@ -38,14 +38,16 @@ const getUsersBySearch = async ({ query }, res) => {
               .orWhere('phone', 'ilike', `%${search}%`)
               .orWhere('plan', 'ilike', `%${search}%`)
               .orWhere('name', 'ilike', `%${search}%`)
-              // .orWhere(knex.raw(`birthdate::text ilike '%${search}%'`))
               .orWhere('category', 'ilike', `%${search}%`)
               .orWhere('address', 'ilike', `%${search}%`)
-              // .orWhere('credits', 'ilike', `%${search}%`)
               .orWhere(knex.raw(`concat(title, ' ', description)`), 'ilike', `%${search}%`);
           });
         }
       });
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'Nenhum usuário encontrado.' });
+    }
 
     return res.status(200).json({ data: { users } });
   } catch (error) {

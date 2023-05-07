@@ -23,7 +23,6 @@ router.use(authMiddleware);
 router.patch('/users/updateUser/:id', updateUser);
 router.delete('/users', deleteAllAccounts);
 
-
 router.post('/categories', createCategory);
 router.patch('/categories/:id', updateCategory);
 router.delete('/categories/:id', deleteCategory);
@@ -32,8 +31,6 @@ router.delete('/categories', deleteAllCategories);
 router.get('/accounts', getAccount);
 router.patch('/accounts/:id', updateAccount);
 router.get('/accounts/:id', getAccountId);
-
-
 
 router.post("/images", createImage);
 router.get("/images", getAllImages);

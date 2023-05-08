@@ -1,5 +1,6 @@
 const knex = require("../database/conection");
 const bcrypt = require("bcrypt");
+const removeAccents = require('remove-accents');
 
 const getAllUser = async (req, res) => {
   try {
@@ -34,14 +35,14 @@ const getUsersBySearch = async ({ query }, res) => {
       .modify((queryBuilder) => {
         if (search) {
           queryBuilder.where((qb) => {
-            qb.where('email', 'ilike', `%${search}%`)
-              .orWhere('phone', 'ilike', `%${search}%`)
-              .orWhere('plan', 'ilike', `%${search}%`)
-              .orWhere('name', 'ilike', `%${search}%`)
-              .orWhere('category', 'ilike', `%${search}%`)
-              .orWhere('city', 'ilike', `%${search}%`)
-              .orWhere('state', 'ilike', `%${search}%`)
-              .orWhere(knex.raw(`concat(title, ' ', description)`), 'ilike', `%${search}%`);
+            qb.where(knex.raw(`unaccent(lower(email))`), 'ilike', `%${removeAccents(search.toLowerCase())}%`)
+              .orWhere(knex.raw(`unaccent(lower(phone))`), 'ilike', `%${removeAccents(search.toLowerCase())}%`)
+              .orWhere(knex.raw(`unaccent(lower(plan))`), 'ilike', `%${removeAccents(search.toLowerCase())}%`)
+              .orWhere(knex.raw(`unaccent(lower(name))`), 'ilike', `%${removeAccents(search.toLowerCase())}%`)
+              .orWhere(knex.raw(`unaccent(lower(category))`), 'ilike', `%${removeAccents(search.toLowerCase())}%`)
+              .orWhere(knex.raw(`unaccent(lower(city))`), 'ilike', `%${removeAccents(search.toLowerCase())}%`)
+              .orWhere(knex.raw(`unaccent(lower(state))`), 'ilike', `%${removeAccents(search.toLowerCase())}%`)
+              .orWhere(knex.raw(`unaccent(lower(title || ' ' || description))`), 'ilike', `%${removeAccents(search.toLowerCase())}%`);
           });
         }
       });

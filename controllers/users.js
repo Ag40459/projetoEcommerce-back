@@ -72,12 +72,15 @@ const getUsersUnifiedTabled = async (req, res) => {
       return res.status(404).json({ message: 'Conta não encontrada para o usuário informado' });
     }
 
-    res.json({ user, account });
+    const images = await knex.select('url').from('images').where('user_id', id);
+
+    res.json({ user, account, images });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };
+
 
 const registerUser = async (req, res) => {
   try {

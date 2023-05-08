@@ -72,8 +72,7 @@ const getUsersUnifiedTabled = async (req, res) => {
       return res.status(404).json({ message: 'Conta não encontrada para o usuário informado' });
     }
 
-    const images = await knex.select('user_id', 'url').from('images').where('user_id', id);
-
+    const images = await knex.select('*').from('images').where('user_id', id);
 
     res.json({ user, account, images });
   } catch (error) {

@@ -7,9 +7,10 @@ const { updateAccount, getAccount, getAccountId } = require("./controllers/accou
 const { createImage, getImageById, updateImage, deleteImage, getAllImages } = require("./controllers/images");
 
 const authMiddleware = require("./middlewares/checkToken/checkToken");
+const multer = require("./middlewares/multer/multer");
 
-router.post("/upload", async (req, res) => {
-    res.json(req.body);
+router.post("/upload", multer.single('file'), async (req, res) => {
+    res.json(req.file);
 })
 
 

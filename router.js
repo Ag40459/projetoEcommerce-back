@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require("express");
 const login = require("./controllers/login");
 const router = express();
@@ -8,9 +9,35 @@ const { createImage, getImageById, updateImage, deleteImage, getAllImages } = re
 
 const authMiddleware = require("./middlewares/checkToken/checkToken");
 const multer = require("./middlewares/multer/multer");
+const aws = require('aws-sdk'),
+      {
+          S3
+      } = require("@aws-sdk/client-s3");
+const endpoint = new aws.Endpoint(process.env.ENDPOINT_S3)
+const s3 = new S3({
+    endpoint,
+    credentials: {
+        accessKeyId: process.env.KEY_ID,
+        secretAccessKey: process.env.APP_KEY
+    }
+});
 
 router.post("/upload", multer.single('file'), async (req, res) => {
     res.json(req.file);
+})
+
+router.get("/files", async (req, res) => {
+
+    try {
+        const files = await s3.listObjects({
+            Bucket: process.env.BACKBLAZE_BUCKET
+        })
+
+        res.json(files);
+    } catch (error) {
+        return res.status(500).json({ message: 'Erro' })
+    }
+
 })
 
 

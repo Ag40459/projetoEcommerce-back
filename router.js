@@ -9,7 +9,7 @@ const { createImage, getImageById, updateImage, deleteImage, getAllImages } = re
 const authMiddleware = require("./middlewares/checkToken/checkToken");
 
 router.post("/upload", async (req, res) => {
-    console.log(req.body);
+    res.json(req.body);
 })
 
 

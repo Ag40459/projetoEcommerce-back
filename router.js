@@ -9,37 +9,33 @@ const { createImage, getImageById, updateImage, deleteImage, getAllImages } = re
 
 const authMiddleware = require("./middlewares/checkToken/checkToken");
 const multer = require("./middlewares/multer/multer");
-const aws = require('aws-sdk'),
-      {
-          S3
-      } = require("@aws-sdk/client-s3");
-const endpoint = new aws.Endpoint(process.env.ENDPOINT_S3)
-const s3 = new S3({
+
+const { S3Client, ListObjectsCommand } = require("@aws-sdk/client-s3");
+
+const endpoint = process.env.ENDPOINT_S3;
+
+const s3 = new S3Client({
     endpoint,
     credentials: {
-        accessKeyId: process.env.KEY_ID,
-        secretAccessKey: process.env.APP_KEY
-    }
+        accessKeyId: process.env.KEY_ID_AWS,
+        secretAccessKey: process.env.APP_KEY_AWS,
+    },
 });
 
 router.post("/upload", multer.single('file'), async (req, res) => {
     res.json(req.file);
-})
+});
 
 router.get("/files", async (req, res) => {
-
     try {
-        const files = await s3.listObjects({
-            Bucket: process.env.BACKBLAZE_BUCKET
-        })
-
-        res.json(files);
+        const command = new ListObjectsCommand({ Bucket: process.env.BACKBLAZE_BUCKET });
+        const response = await s3.send(command);
+        res.json(response.Contents);
     } catch (error) {
-        return res.status(500).json({ message: 'Erro' })
+        console.log(error);
+        return res.status(500).json({ message: 'Erro' });
     }
-
-})
-
+});
 
 router.get('/users/accounts', getAllUser);
 router.get('/users/search', getUsersBySearch);

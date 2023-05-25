@@ -97,6 +97,10 @@ const getAllImage = async (req, res) => {
         const response = await s3.send(command);
         const result = []
 
+        if (!response.Contents) {
+            return res.status(500).json({ message: 'Não existe imagem(s) para ser exibida.' });
+
+        }
         for (const file of response.Contents) {
             const bucketUrl = `https://${process.env.BACKBLAZE_BUCKET}.${process.env.ENDPOINT_S3.replace('https://', '')}`;
 
@@ -112,6 +116,7 @@ const getAllImage = async (req, res) => {
 
         res.json(result);
     } catch (error) {
+        console.log(error)
         return res.status(500).json({ message: 'Erro ao obter imagens.' });
     }
 };

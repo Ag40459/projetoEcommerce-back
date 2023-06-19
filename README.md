@@ -61,4 +61,14 @@ Você pode consultar o arquivo `index.js` e os arquivos dentro do diretório `ro
 
 ## Contribuição
 
-Contribuições são bem-vindas! Se você quiser contribuir para este projeto, siga as diretrizes de contribuição descrit
+## Contribuição
+
+Contribuições são bem-vindas! Siga as diretrizes de contribuição descritas no arquivo [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Licença
+
+Este projeto está licenciado sob a licença ISC. Para mais detalhes, consulte o arquivo `LICENSE`.
+
+## Contato
+
+Se você tiver alguma dúvida ou sugestão em relação a este projeto, entre em contato conosco pelo email [agenortorres10@gmail.com].

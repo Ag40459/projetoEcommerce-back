@@ -56,21 +56,24 @@ const sendMultImage = async (req, res) => {
     }
     try {
         const result = [];
+        console.log(files);
 
         for (const file of files) {
+
+
             if (!file) {
                 return res.status(400).json({ message: 'Nenhum arquivo enviado.' });
             }
 
-            const { originalname, buffer, minmetype } = file;
+            const { originalname, buffer, mimetype } = file;
 
             const params = {
                 Bucket: process.env.BACKBLAZE_BUCKET,
                 Key: `${user.plan}/${user.email}/${originalname}`,
                 Body: buffer,
-                ContentType: minmetype
+                ContentType: mimetype
             };
-            console.log(params.Key);
+            console.log(buffer);
 
             const command = new PutObjectCommand(params);
             await s3.send(command);

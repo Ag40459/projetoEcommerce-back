@@ -61,8 +61,6 @@ Você pode consultar o arquivo `index.js` e os arquivos dentro do diretório `ro
 
 ## Contribuição
 
-## Contribuição
-
 Contribuições são bem-vindas! Siga as diretrizes de contribuição descritas no arquivo [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Licença

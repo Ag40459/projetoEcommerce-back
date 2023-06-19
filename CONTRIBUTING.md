@@ -31,6 +31,6 @@ Se você encontrar algum problema ou bug no projeto, abra uma nova issue neste r
 
 ## Contato
 
-Se você tiver alguma dúvida ou precisar de ajuda durante o processo de contribuição, entre em contato conosco pelo email [seu-email@exemplo.com].
+Se você tiver alguma dúvida ou precisar de ajuda durante o processo de contribuição, entre em contato conosco pelo email [agenortorres10@gmailcom].
 
 Agradecemos antecipadamente por suas contribuições ao projeto!

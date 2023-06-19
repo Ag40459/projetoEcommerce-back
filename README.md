@@ -67,7 +67,7 @@ Contribuições são bem-vindas! Siga as diretrizes de contribuição descritas 
 
 ## Licença
 
-Este projeto está licenciado sob a licença ISC. Para mais detalhes, consulte o arquivo `LICENSE`.
+Este projeto está licenciado sob a licença ISC. Para mais detalhes, consulte o arquivo [LICENSE.md](LICENSE.md).
 
 ## Contato
 

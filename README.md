@@ -53,11 +53,10 @@ Certifique-se de configurar corretamente essas variáveis de acordo com o seu am
 
 A API fornecida por este projeto possui as seguintes rotas principais:
 
-- `/api/users`: Rotas relacionadas à gestão de usuários.
-- `/api/accounts`: Rotas relacionadas à gestão de contas.
-- `/api/transactions`: Rotas relacionadas à gestão de transações.
-
-Você pode consultar o arquivo `index.js` e os arquivos dentro do diretório `routes/` para obter mais detalhes sobre as rotas disponíveis e seus respectivos controladores.
+/api/users: Rotas relacionadas à gestão de usuários.
+/api/accounts: Rotas relacionadas à gestão de contas.
+/api/transactions: Rotas relacionadas à gestão de transações.
+Para obter informações detalhadas sobre como utilizar essas rotas, consulte o arquivo [USE.md](USE.md). O arquivo USE.md contém instruções passo a passo e exemplos de como interagir com a API.
 
 ## Contribuição
 
